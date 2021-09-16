@@ -2,6 +2,8 @@
 const BIP39 = require("bip39")
 const hdkey = require("ethereumjs-wallet/hdkey")
 const Wallet = require("ethereumjs-wallet")
+const keccak256 = require("js-sha3").keccak256
+const EthereumTx = require('ethereumjs-tx')
 
 // Add functions here
 // Generate a random mnemonic (uses crypt.randomBytes under the hood), defaults to 128-bits of entropy
@@ -21,6 +23,21 @@ function generatePrivKey(mnemonic) {
 function derivePubKey(privKey) {
     const wallet = Wallet.fromPrivateKey(privKey)
     return wallet.getPublicKey()
+}
+
+function deriveEthAddress(pubKey) {
+    const address = keccak256(pubKey)
+    return "0x" + address.substring(address.length - 40, address.length)
+}
+
+function signTx(privKey, txData) {
+    const tx = new EthereumTx(txData)
+    tx.sign(privKey)
+    return tx
+}
+
+function getSignerAddress(signedTx) {
+    return "0x" + signedTx.getSenderAddress().toString('hex')
 }
 
 /*
